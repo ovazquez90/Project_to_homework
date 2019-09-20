@@ -1,2 +1,3 @@
 # Project_to_homework
-##Oreste Corrales Vázquez
+Oreste Corrales Vázquez
+ocorrales2@uc.cl
