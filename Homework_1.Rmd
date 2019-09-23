@@ -1,0 +1,91 @@
+---
+title: "Primera evaluación: exploración de datos"
+author: "Oreste"
+date: "20-09-2019"
+output: html_document
+fig_caption: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(readxl)
+PanTHERIA <- read_excel("PanTHERIA.xlsx", sheet = "Sheet2")
+```
+
+La base de datos PanTHERIA [http://esapubs.org/archive/ecol/E090/184/] recopila datos de la literatura para 25 tipos de información ecológica y de historia de vida para cualquier especie existente o recientemente extinta dentro de la clase *Mammalia* (mamíferos).
+
+
+Los mamíferos se agrupan en los siguientes ordenes: *`r unique(PanTHERIA$Order)`*; de los cuales los de máxima longevidad son los del orden *
+```{r, message=FALSE, echo=FALSE, comment="", results='asis', warning=FALSE}
+library(tidyverse)
+library(readxl)
+PanTHERIA <- read_excel("PanTHERIA.xlsx", sheet = "Sheet2")
+ordenes <- PanTHERIA %>% select(Order, MaxLongevity_m) %>% group_by(Order) %>% summarise_all(mean)
+
+ordenes_ordenados <- arrange(ordenes, MaxLongevity_m)
+x = ordenes_ordenados$Order
+last(x)
+```
+* con
+```{r echo=FALSE, message=FALSE, warning=FALSE, comment="", results='asis'}
+library(tidyverse)
+library(readxl)
+PanTHERIA <- read_excel("PanTHERIA.xlsx", sheet = "Sheet2")
+ordenes <- PanTHERIA %>% select(Order, MaxLongevity_m) %>% group_by(Order) %>% summarise_all(mean)
+
+ordenes_ordenados <- arrange(ordenes, MaxLongevity_m)
+y = ordenes_ordenados$MaxLongevity_m
+max(y)
+```
+m
+
+
+
+La siguiente tabla muestra los órdenes de mamíferos para los cuales existen datos recopilados de masa corporal (MC) y tasa metabólica basal (TMB):
+
+```{r, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(readxl)
+library(knitr)
+PanTHERIA <- read_excel("PanTHERIA.xlsx", sheet = "Sheet2")
+mamiferos <- PanTHERIA %>% dplyr::select(Order, AdultBodyMass_g, BasalMetRate_mLO2hr) %>% filter(BasalMetRate_mLO2hr >= 0) %>% group_by(Order) %>% summarise_all(mean)
+kable(mamiferos, caption = "**Tabla 1.** Valores de masa corporal y tasa de metabolismo basal descritos para los órdenes de mamíferos")
+```
+
+En la figura 1 muestra la relación entre la TMB de los distintos órdenes de mamíferos con sus respectivos pesos corporales.
+```{r, message=FALSE, echo=FALSE, fig.cap="Figura 1. Relación entre la tasa de metabolismo basal y la masa corporal de los órdenes de mamíferos"}
+library(ggplot2)
+library(readxl)
+PanTHERIA <- read_excel("PanTHERIA.xlsx", sheet = "Sheet2")
+ggplot(mamiferos, aes(x = AdultBodyMass_g, y = BasalMetRate_mLO2hr)) + 
+  geom_point(color = "#f9144c", position = "jitter", size = 3) + theme_minimal() +
+  scale_x_log10() + scale_y_log10() + geom_text(aes(label = Order), hjust=0.5, vjust=0) +
+  xlab("Masa corporal (g)") + ylab("Tasa de metabolismo basal (mL(O2)/h)")
+```
+
+A partir de este gráfico (Figura 1) se podría interpretar que existe una relación directa entre la MC de los mamíferos y su TMB. No obstante, debe tenerse en cuenta que en el gráfico solo se representan los valores promedio de cada variable. Al representar todas las familias y géneros presentes en cada orden (Figura 2), se observa una dispersión y solapamiento de los valores.
+```{r, fig.cap="Figura 2. Relación entre la tasa de metabolismo basal y la masa corporal de las familias y géneros de la clase *Mammalia*"}
+library(ggplot2)
+library(readxl)
+PanTHERIA <- read_excel("PanTHERIA.xlsx", sheet = "Sheet2")
+mamiferos_todos <- PanTHERIA %>% dplyr::select(Order, AdultBodyMass_g, BasalMetRate_mLO2hr) %>% filter(BasalMetRate_mLO2hr >= 0) %>% group_by(Order)
+
+ggplot(mamiferos_todos, aes(x = AdultBodyMass_g, y = BasalMetRate_mLO2hr), ) + 
+  geom_point(position = "jitter", aes(col=Order)) + scale_x_log10() + scale_y_log10() + 
+  theme(legend.position = "right") + xlab("Masa corporal (g)") + ylab("Tasa de metabolismo basal (mL(O2)/h)")
+```
+
+Ciertamente, se ha descrito que mamíferos de similar masa corporal presentan diferencias estadíticamente significativas de tasa de metabolismo basal. Tal es el caso de los primates, que presentan en promedio solo un 50 % de la TMB  de en comparación con otros mamíferos placentarios de similar MC, como los del orden *Carnivora* (Figura 3) [https://www.pnas.org/content/111/4/1433].
+
+```{r}
+library(ggplot2)
+library(readxl)
+PanTHERIA <- read_excel("PanTHERIA.xlsx", sheet = "Sheet2")
+mamiferos_todos <- PanTHERIA %>% dplyr::select(Order, AdultBodyMass_g, BasalMetRate_mLO2hr) %>% filter(BasalMetRate_mLO2hr >= 0) %>% group_by(Order)
+ggplot(mamiferos_todos, aes(x = AdultBodyMass_g, y = BasalMetRate_mLO2hr), ) + 
+  geom_point(position = "jitter", aes(col=Order)) + scale_x_log10() + scale_y_log10() + 
+  theme(legend.position = "right") + facet_wrap(~Order, ncol = 4) + xlab("Masa corporal (g)") + ylab("Tasa de metabolismo basal (mL(O2)/h)")
+```
+
+En este estudio la TMB se midió mediante el gasto total de energía (en kilocalorías por día). Se piensa que la menor TMB de los primates está relacionada con un crecimiento más lento, una disminución de la reproducción y un ncremento de la longevidad [https://www.pnas.org/content/111/4/1433.full.pdf].
