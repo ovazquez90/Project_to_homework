@@ -3,4 +3,4 @@ Oreste Corrales Vázquez
 ocorrales2@uc.cl
 Doctorado en Ciencias Biológicas
 Mención Biología Celular y Molecular
-UC
+Pontificia Universidad Católica de Chile
